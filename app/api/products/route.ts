@@ -1,9 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET all products
-
-
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,58 +8,75 @@ export async function GET(request: NextRequest) {
 
     const searchName = searchParams.get("searchName");
     const searchDescription = searchParams.get("searchDescription");
-    const sortParam = searchParams.get("sort"); // e.g., -createdAt or updatedAt
+    const sortParam = searchParams.get("sort") || "createdAt"; // e.g. createdAt, -updatedAt
+    const seekParam = searchParams.get("seek");
 
-    // Define mapping from API sort keys to Prisma field names
-    const sortFieldMap: Record<string, string> = {
+    // Pagination setup
+    const limit = 10;
+    const page = parseInt(seekParam || "0", 10); // default seek = 0
+    const skip = page * limit;
+
+    // Map sort fields
+    const sortFieldMap: Record<string, keyof typeof prisma.product.fields> = {
       createdAt: "created_at",
       updatedAt: "updated_at",
+      id: "id",
     };
 
-    // Determine sort direction and Prisma field name
-    let sortOrder: "asc" | "desc" = "desc";
-    let sortKey = sortParam || "createdAt";
+    // Determine sort order and field
+    let sortOrder: "asc" | "desc" = "asc";
+    let sortKey = sortParam;
 
     if (sortKey.startsWith("-")) {
       sortOrder = "desc";
-      sortKey = sortKey.slice(1); // remove the "-" prefix
-    } else {
-      sortOrder = "asc";
+      sortKey = sortKey.slice(1);
     }
 
     const prismaSortField = sortFieldMap[sortKey] || "created_at";
 
+    const whereClause = {
+      AND: [
+        searchName
+          ? {
+              name: {
+                contains: searchName,
+                mode: "insensitive",
+              },
+            }
+          : {},
+        searchDescription
+          ? {
+              description: {
+                contains: searchDescription,
+                mode: "insensitive",
+              },
+            }
+          : {},
+      ],
+    };
+
     const products = await prisma.product.findMany({
-      where: {
-        AND: [
-          searchName
-            ? {
-                name: {
-                  contains: searchName,
-                  mode: "insensitive",
-                },
-              }
-            : {},
-          searchDescription
-            ? {
-                description: {
-                  contains: searchDescription,
-                  mode: "insensitive",
-                },
-              }
-            : {},
-        ],
-      },
+      where: whereClause,
       orderBy: {
         [prismaSortField]: sortOrder,
       },
+      skip,
+      take: limit,
     });
 
-    if (products.length === 0) {
-      return NextResponse.json({ message: "No data found" }, { status: 404 });
-    }
+    const totalCount = await prisma.product.count({
+      where: whereClause,
+    });
 
-    return NextResponse.json(products);
+    const hasNextPage = skip + limit < totalCount;
+
+    return NextResponse.json({
+      list: products,
+      page,
+      totalPages: Math.ceil(totalCount / limit),
+      hasNextPage,
+      totalCount,
+    });
   } catch (error) {
     console.error("Error fetching products:", error);
     return NextResponse.json(

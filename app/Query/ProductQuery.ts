@@ -7,7 +7,8 @@ import { toast } from "react-toastify";
 export const useAllProduct = (filters?: {
   searchName?: string;
   searchDescription?: string;
-  sort?: string; 
+  sort?: string;
+  seek?: number; 
 }) => {
   const { data } = useQuery({
     queryKey: [QueryKeys.LIST_PRODUCTS, filters],

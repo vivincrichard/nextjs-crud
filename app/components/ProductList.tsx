@@ -16,13 +16,15 @@ export default function ProductList() {
   );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
-  // Combine into API-friendly format: sort=-createdAt or sort=updatedAt
+  const [page, setPage] = useState<number>(0); // SEEK page starts from 0
+
   const sortQuery = `${sortOrder === "desc" ? "-" : ""}${sortField}`;
 
   const { data } = useAllProduct({
     searchName: name,
     searchDescription: description,
     sort: sortQuery,
+    seek: page,
   });
 
   const { mutateAsync: deleteProduct } = useDeleteProduct();
@@ -86,78 +88,68 @@ export default function ProductList() {
               <th className="px-6 py-3">Description</th>
               <th className="px-6 py-3">Price</th>
               <th className="px-6 py-3">Available Quantity</th>
-
-              {/* Created At */}
               <th
                 className="px-6 py-3 cursor-pointer select-none"
                 onClick={() => handleSort("createdAt")}
               >
                 <div className="flex items-center gap-1">
                   Created At
-                  <div className="flex items-center leading-none ml-1">
-                    <ArrowUp
-                      size={12}
-                      className={
-                        sortField === "createdAt" && sortOrder === "asc"
-                          ? "text-blue-600"
-                          : "text-gray-400"
-                      }
-                    />
-                    <ArrowDown
-                      size={12}
-                      className={
-                        sortField === "createdAt" && sortOrder === "desc"
-                          ? "text-blue-600"
-                          : "text-gray-400"
-                      }
-                    />
-                  </div>
+                  <ArrowUp
+                    size={12}
+                    className={
+                      sortField === "createdAt" && sortOrder === "asc"
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    }
+                  />
+                  <ArrowDown
+                    size={12}
+                    className={
+                      sortField === "createdAt" && sortOrder === "desc"
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    }
+                  />
                 </div>
               </th>
-
-              {/* Updated At */}
               <th
                 className="px-6 py-3 cursor-pointer select-none"
                 onClick={() => handleSort("updatedAt")}
               >
                 <div className="flex items-center gap-1">
                   Updated At
-                  <div className="flex items-center leading-none ml-1">
-                    <ArrowUp
-                      size={12}
-                      className={
-                        sortField === "updatedAt" && sortOrder === "asc"
-                          ? "text-blue-600"
-                          : "text-gray-400"
-                      }
-                    />
-                    <ArrowDown
-                      size={12}
-                      className={
-                        sortField === "updatedAt" && sortOrder === "desc"
-                          ? "text-blue-600"
-                          : "text-gray-400"
-                      }
-                    />
-                  </div>
+                  <ArrowUp
+                    size={12}
+                    className={
+                      sortField === "updatedAt" && sortOrder === "asc"
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    }
+                  />
+                  <ArrowDown
+                    size={12}
+                    className={
+                      sortField === "updatedAt" && sortOrder === "desc"
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    }
+                  />
                 </div>
               </th>
-
               <th className="px-6 py-3">Action</th>
             </tr>
           </thead>
-
           <tbody>
-            {data?.map((item: IProduct) => (
+            {data?.list?.map((item: IProduct) => (
               <tr
-                key={item?.id}
+                key={item.id}
                 className="bg-white hover:bg-gray-300 text-black"
               >
-                <td className="px-6 py-4">{item?.id}</td>
-                <td className="px-6 py-4">{item?.name}</td>
-                <td className="px-6 py-4">{item?.description || "----"}</td>
-                <td className="px-6 py-4">{item?.price}</td>
-                <td className="px-6 py-4">{item?.quantity_in_stock}</td>
+                <td className="px-6 py-4">{item.id}</td>
+                <td className="px-6 py-4">{item.name}</td>
+                <td className="px-6 py-4">{item.description || "----"}</td>
+                <td className="px-6 py-4">{item.price}</td>
+                <td className="px-6 py-4">{item.quantity_in_stock}</td>
                 <td className="px-6 py-4">
                   {moment(item.created_at).format("DD MMM YY, hh:mm A")}
                 </td>
@@ -166,13 +158,13 @@ export default function ProductList() {
                 </td>
                 <td className="px-6 py-4 flex gap-3">
                   <Link
-                    href={`/products/${item?.id}`}
+                    href={`/products/${item.id}`}
                     className="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-md text-sm"
                   >
                     Edit
                   </Link>
                   <button
-                    onClick={() => deleteProduct(item?.id)}
+                    onClick={() => deleteProduct(item.id)}
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
                   >
                     Delete
@@ -182,6 +174,25 @@ export default function ProductList() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="mt-6 flex justify-center gap-4">
+        <button
+          onClick={() => setPage((p) => Math.max(p - 1, 0))}
+          disabled={page === 0}
+          className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="px-4 py-2">Page {page + 1}</span>
+        <button
+          onClick={() => setPage((p) => p + 1)}
+          disabled={!data?.hasNextPage}
+          className={`px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50`}
+        >
+          Next
+        </button>
       </div>
     </div>
   );
