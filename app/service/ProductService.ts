@@ -17,17 +17,21 @@ export interface IProduct {
   updated_at: string;
 }
 
-interface IProductList {
-  next: number | null;
-  previous: number | null;
-  list: IProduct[];
-}
 
 export class ProductService {
-  static list = async () => {
-    const response = await axios.get("/api/products");
+  static list = async (params?: {
+    searchName?: string;
+    searchDescription?: string;
+  }) => {
+    const query = new URLSearchParams();
+    if (params?.searchName) query.append("searchName", params.searchName);
+    if (params?.searchDescription)
+      query.append("searchDescription", params.searchDescription);
+
+    const response = await axios.get(`/api/products?${query.toString()}`);
     return response.data;
   };
+
 
   static getById = async (id: number) => {
     const response = await axios.get<IProduct>(`/api/products/${id}`);

@@ -8,8 +8,10 @@ import { useState } from "react";
 export default function ProductList() {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-
-  const { data } = useAllProduct();
+  const { data } = useAllProduct({
+    searchName: name,
+    searchDescription: description,
+  });
   const { mutateAsync: deleteProduct } = useDeleteProduct();
 
   return (

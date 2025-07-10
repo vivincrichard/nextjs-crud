@@ -3,11 +3,12 @@ import { QueryKeys } from "./keys/QueryKeys";
 import { IProductPayload, ProductService } from "../service/ProductService";
 import { toast } from "react-toastify";
 
-export const useAllProduct = () => {
+export const useAllProduct = (filters?: { searchName?: string; searchDescription?: string }) => {
   const { data } = useQuery({
-    queryKey: [QueryKeys.LIST_PRODUCTS],
-    queryFn: () => ProductService.list(),
+    queryKey: [QueryKeys.LIST_PRODUCTS, filters], 
+    queryFn: () => ProductService.list(filters),
   });
+
   return { data };
 };
 
