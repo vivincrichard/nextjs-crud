@@ -5,7 +5,7 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const userId = Number(params.id);
+  const userId = Number(params?.id);
 
   if (isNaN(userId)) {
     return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
@@ -26,7 +26,7 @@ export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const userId = Number(params.id);
+  const userId = Number(params?.id);
   const body = await request.json();
   const { name, email } = body;
 
@@ -46,9 +46,17 @@ export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const userId = Number(params.id);
+  const userId = Number(params?.id);
 
   try {
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     await prisma.user.delete({
       where: { id: userId },
     });
