@@ -4,7 +4,11 @@ import { NextResponse } from "next/server";
 // GET all products
 export async function GET() {
   try {
-    const products = await prisma.product.findMany();
+    const products = await prisma.product.findMany({
+      orderBy: {
+        created_at: "desc"
+      }
+    });
     return NextResponse.json(products);
   } catch (error) {
     return NextResponse.json(
