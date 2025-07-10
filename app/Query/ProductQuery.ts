@@ -1,0 +1,82 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryKeys } from "./keys/QueryKeys";
+import { IProductPayload, ProductService } from "../service/ProductService";
+import { useEffect } from "react";
+import { toast } from "react-toastify";
+
+export const useAllProduct = () => {
+  console.log("333333333333333333");
+
+  const { data } = useQuery({
+    queryKey: [QueryKeys.LIST_PRODUCTS],
+    queryFn: () => ProductService.list(),
+  });
+  return { data };
+};
+
+export const useProductById = (id: number) => {
+  console.log("sdfl", id);
+  const { data, isLoading, error } = useQuery({
+    queryKey: [QueryKeys.GET_PRODUCT_ID],
+    queryFn: () => ProductService.getById(id),
+  });
+  return { data, isLoading, error };
+};
+
+export const useCreateProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [QueryKeys.CREATE_PRODUCT],
+    mutationFn: (data: IProductPayload) => ProductService.create(data),
+    onSuccess: () => {
+      toast.success("Product created successfully!");
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.LIST_PRODUCTS],
+      });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data);
+    },
+  });
+};
+
+export const useUpdateProduct = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationKey: [QueryKeys.UPDATE_PRODUCT],
+    mutationFn: ({ id, data }: { id: number; data: IProductPayload }) =>
+      ProductService.update(id, data),
+    onSuccess: () => {
+      toast.dark("Product Updated Successfully");
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.LIST_PRODUCTS],
+      });
+    },
+    onError: (error: any) => {
+      if (error?.response?.data?.length === 0) {
+        toast.error("Failed to update product");
+      }
+    },
+  });
+};
+
+export const useDeleteProduct = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: [QueryKeys.DELETE_PRODUCT],
+    mutationFn: (id: number) => ProductService.delete(id),
+    onSuccess: () => {
+      toast.dark("Product Deleted Successfully!");
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.LIST_PRODUCTS],
+      });
+    },
+    onError: (error: any) => {
+      if (error?.response?.data?.length === 0) {
+        toast.error("Failed to Delete Product");
+      }
+    },
+  });
+};
