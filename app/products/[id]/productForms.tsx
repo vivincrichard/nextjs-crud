@@ -14,8 +14,8 @@ interface IProps {
 
 export function ProductForms({ id, productDetail }: IProps) {
   const formikRef = useRef<any>(null);
-  const { data: createProduct } = useCreateProduct();
-  const { data: updateProduct } = useUpdateProduct();
+  const { mutateAsync: createProduct } = useCreateProduct();
+  const { mutateAsync: updateProduct } = useUpdateProduct();
 
   const initialData = {
     name: productDetail?.name || "",

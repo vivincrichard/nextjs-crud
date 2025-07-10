@@ -40,7 +40,7 @@ export class ProductService {
   };
 
   static update = async (id: number, payload: IProductPayload) => {
-    const response = await axios.put(`/api/products${id}`, payload);
+    const response = await axios.put(`/api/products/${id}`, payload);
     return response.data;
   };
 

@@ -5,8 +5,6 @@ import { useEffect } from "react";
 import { toast } from "react-toastify";
 
 export const useAllProduct = () => {
-  console.log("333333333333333333");
-
   const { data } = useQuery({
     queryKey: [QueryKeys.LIST_PRODUCTS],
     queryFn: () => ProductService.list(),
@@ -15,7 +13,6 @@ export const useAllProduct = () => {
 };
 
 export const useProductById = (id: number) => {
-  console.log("sdfl", id);
   const { data, isLoading, error } = useQuery({
     queryKey: [QueryKeys.GET_PRODUCT_ID],
     queryFn: () => ProductService.getById(id),
