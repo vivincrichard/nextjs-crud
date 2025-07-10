@@ -1,9 +1,10 @@
 import React from 'react'
+import { ProductForms } from './[id]/productForms'
 
 const page = () => {
   return (
     <div>
-      <h1>hi</h1>
+      <ProductForms />
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { QueryKeys } from "./keys/QueryKeys";
 import { IProductPayload, ProductService } from "../service/ProductService";
-import { useEffect } from "react";
 import { toast } from "react-toastify";
 
 export const useAllProduct = () => {

@@ -2,18 +2,21 @@
 "use client";
 
 import { useCreateProduct, useUpdateProduct } from "@/app/Query/ProductQuery";
-import { IProductPayload } from "@/app/service/ProductService";
+import { IProduct, IProductPayload } from "@/app/service/ProductService";
 import { ErrorMessage, Field, Form, Formik } from "formik";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useRef } from "react";
 import * as Yup from "yup";
 
 interface IProps {
-  id: number;
-  productDetail : any
+  id?: number | null;
+  productDetail?: IProduct;
 }
 
 export function ProductForms({ id, productDetail }: IProps) {
   const formikRef = useRef<any>(null);
+  const router = useRouter();
   const { mutateAsync: createProduct } = useCreateProduct();
   const { mutateAsync: updateProduct } = useUpdateProduct();
 
@@ -37,9 +40,11 @@ export function ProductForms({ id, productDetail }: IProps) {
       .min(0, "Quantity must be a non-negative number"),
   });
 
-
   return (
     <div className="p-6 bg-white rounded shadow-md">
+      <div className="my-5">
+        <Link href={"/"} className="bg-gray-300 w-fit px-4 py-3 rounded border-1 cursor-pointer text-sm">Home</Link>
+      </div>
       <Formik
         innerRef={formikRef}
         initialValues={initialData}
@@ -53,9 +58,9 @@ export function ProductForms({ id, productDetail }: IProps) {
             quantity_in_stock: Number(values.quantity_in_stock),
           };
           if (id) {
-            updateProduct({ id, data });
+            updateProduct({ id, data }).then(() => router.push("/"));
           } else {
-            createProduct(data);
+            createProduct(data).then(() => router.push("/"));
             formikRef.current?.resetForm();
           }
         }}
@@ -120,7 +125,7 @@ export function ProductForms({ id, productDetail }: IProps) {
                 type="submit"
                 className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
               >
-                Submit
+                {id ? "Update" : "Create"}
               </button>
               <button
                 type="button"
