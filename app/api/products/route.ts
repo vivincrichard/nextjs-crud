@@ -1,14 +1,44 @@
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET all products
-export async function GET() {
+
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+
+    const searchName = searchParams.get("searchName");
+    const searchDescription = searchParams.get("searchDescription");
+
     const products = await prisma.product.findMany({
+      where: {
+        AND: [
+          searchName
+            ? {
+                name: {
+                  contains: searchName,
+                  mode: "insensitive",
+                },
+              }
+            : {},
+          searchDescription
+            ? {
+                description: {
+                  contains: searchDescription,
+                  mode: "insensitive",
+                },
+              }
+            : {},
+        ],
+      },
       orderBy: {
-        created_at: "desc"
-      }
+        created_at: "desc",
+      },
     });
+    if (products.length === 0) {
+      return NextResponse.json({ message: "No data found" }, { status: 404 });
+    }
+
     return NextResponse.json(products);
   } catch (error) {
     return NextResponse.json(
