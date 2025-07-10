@@ -3,12 +3,23 @@ import { NextRequest, NextResponse } from "next/server";
 
 // GET all products
 
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
     const searchName = searchParams.get("searchName");
     const searchDescription = searchParams.get("searchDescription");
+    const sortParam = searchParams.get("sort"); // createdAt | updatedAt
+
+    // Map client-provided sort fields to Prisma fields
+    const sortFieldMap: Record<string, keyof typeof prisma.product.fields> = {
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+    };
+
+    // Default sort field is "created_at"
+    const sortField = sortFieldMap[sortParam || ""] || "created_at";
 
     const products = await prisma.product.findMany({
       where: {
@@ -32,15 +43,17 @@ export async function GET(request: NextRequest) {
         ],
       },
       orderBy: {
-        created_at: "desc",
+        [sortField]: "desc",
       },
     });
+
     if (products.length === 0) {
       return NextResponse.json({ message: "No data found" }, { status: 404 });
     }
 
     return NextResponse.json(products);
   } catch (error) {
+    console.error(error);
     return NextResponse.json(
       { error: "Failed to fetch products" },
       { status: 500 }
