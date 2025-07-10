@@ -77,7 +77,7 @@ export default function ProductList() {
               >
                 <td className="px-6 py-4">{item?.id}</td>
                 <td className="px-6 py-4">{item?.name}</td>
-                <td className="px-6 py-4">{item?.description}</td>
+                <td className="px-6 py-4">{item?.description || "----"}</td>
                 <td className="px-6 py-4">{item?.price}</td>
                 <td className="px-6 py-4">{item?.quantity_in_stock}</td>
                 <td className="px-6 py-4">
