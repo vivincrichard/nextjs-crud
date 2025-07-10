@@ -3,14 +3,20 @@ import { QueryKeys } from "./keys/QueryKeys";
 import { IProductPayload, ProductService } from "../service/ProductService";
 import { toast } from "react-toastify";
 
-export const useAllProduct = (filters?: { searchName?: string; searchDescription?: string }) => {
+// ProductQuery.ts
+export const useAllProduct = (filters?: {
+  searchName?: string;
+  searchDescription?: string;
+  sort?: string; 
+}) => {
   const { data } = useQuery({
-    queryKey: [QueryKeys.LIST_PRODUCTS, filters], 
+    queryKey: [QueryKeys.LIST_PRODUCTS, filters],
     queryFn: () => ProductService.list(filters),
   });
 
   return { data };
 };
+
 
 export const useProductById = (id: number) => {
   const { data, isLoading, error } = useQuery({

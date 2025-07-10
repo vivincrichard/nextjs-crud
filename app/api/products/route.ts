@@ -4,22 +4,33 @@ import { NextRequest, NextResponse } from "next/server";
 // GET all products
 
 
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
     const searchName = searchParams.get("searchName");
     const searchDescription = searchParams.get("searchDescription");
-    const sortParam = searchParams.get("sort"); // createdAt | updatedAt
+    const sortParam = searchParams.get("sort"); // e.g., -createdAt or updatedAt
 
-    // Map client-provided sort fields to Prisma fields
-    const sortFieldMap: Record<string, keyof typeof prisma.product.fields> = {
+    // Define mapping from API sort keys to Prisma field names
+    const sortFieldMap: Record<string, string> = {
       createdAt: "created_at",
       updatedAt: "updated_at",
     };
 
-    // Default sort field is "created_at"
-    const sortField = sortFieldMap[sortParam || ""] || "created_at";
+    // Determine sort direction and Prisma field name
+    let sortOrder: "asc" | "desc" = "desc";
+    let sortKey = sortParam || "createdAt";
+
+    if (sortKey.startsWith("-")) {
+      sortOrder = "desc";
+      sortKey = sortKey.slice(1); // remove the "-" prefix
+    } else {
+      sortOrder = "asc";
+    }
+
+    const prismaSortField = sortFieldMap[sortKey] || "created_at";
 
     const products = await prisma.product.findMany({
       where: {
@@ -43,7 +54,7 @@ export async function GET(request: NextRequest) {
         ],
       },
       orderBy: {
-        [sortField]: "desc",
+        [prismaSortField]: sortOrder,
       },
     });
 
@@ -53,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(products);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching products:", error);
     return NextResponse.json(
       { error: "Failed to fetch products" },
       { status: 500 }

@@ -17,21 +17,27 @@ export interface IProduct {
   updated_at: string;
 }
 
+// ProductService.ts
+export interface IProductFilters {
+  searchName?: string;
+  searchDescription?: string;
+  sort?: string; 
+}
+
 
 export class ProductService {
-  static list = async (params?: {
-    searchName?: string;
-    searchDescription?: string;
-  }) => {
+  static async list(filters?: IProductFilters): Promise<IProduct[]> {
     const query = new URLSearchParams();
-    if (params?.searchName) query.append("searchName", params.searchName);
-    if (params?.searchDescription)
-      query.append("searchDescription", params.searchDescription);
 
-    const response = await axios.get(`/api/products?${query.toString()}`);
-    return response.data;
-  };
+    if (filters?.searchName) query.append("searchName", filters.searchName);
+    if (filters?.searchDescription)
+      query.append("searchDescription", filters.searchDescription);
+    if (filters?.sort) query.append("sort", filters.sort);
 
+    const res = await fetch(`/api/products?${query.toString()}`);
+    if (!res.ok) throw new Error("Failed to fetch products");
+    return res.json();
+  }
 
   static getById = async (id: number) => {
     const response = await axios.get<IProduct>(`/api/products/${id}`);
