@@ -1,19 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
 
     const searchName = searchParams.get("searchName");
     const searchDescription = searchParams.get("searchDescription");
-    const sortParam = searchParams.get("sort") || "createdAt"; // e.g. createdAt, -updatedAt
+    const sortParam = searchParams.get("sort") || "createdAt";
     const seekParam = searchParams.get("seek");
 
     // Pagination setup
     const limit = 10;
-    const page = parseInt(seekParam || "0", 10); // default seek = 0
+    const page = parseInt(seekParam || "0", 10);
     const skip = page * limit;
 
     // Map sort fields
@@ -40,7 +39,7 @@ export async function GET(request: NextRequest) {
           ? {
               name: {
                 contains: searchName,
-                mode: "insensitive",
+                mode: "insensitive" as const,
               },
             }
           : {},
@@ -48,7 +47,7 @@ export async function GET(request: NextRequest) {
           ? {
               description: {
                 contains: searchDescription,
-                mode: "insensitive",
+                mode: "insensitive" as const,
               },
             }
           : {},

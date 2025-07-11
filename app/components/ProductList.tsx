@@ -20,7 +20,7 @@ export default function ProductList() {
 
   const sortQuery = `${sortOrder === "desc" ? "-" : ""}${sortField}`;
 
-  const { data } = useAllProduct({
+  const { data, isLoading, isError, isRefetching, error } = useAllProduct({
     searchName: name,
     searchDescription: description,
     sort: sortQuery,
@@ -95,7 +95,7 @@ export default function ProductList() {
                 <div className="flex items-center gap-1">
                   Created At
                   <ArrowUp
-                    size={12}
+                    size={25}
                     className={
                       sortField === "createdAt" && sortOrder === "asc"
                         ? "text-blue-600"
@@ -103,7 +103,7 @@ export default function ProductList() {
                     }
                   />
                   <ArrowDown
-                    size={12}
+                    size={25}
                     className={
                       sortField === "createdAt" && sortOrder === "desc"
                         ? "text-blue-600"
@@ -119,7 +119,7 @@ export default function ProductList() {
                 <div className="flex items-center gap-1">
                   Updated At
                   <ArrowUp
-                    size={12}
+                    size={25}
                     className={
                       sortField === "updatedAt" && sortOrder === "asc"
                         ? "text-blue-600"
@@ -127,7 +127,7 @@ export default function ProductList() {
                     }
                   />
                   <ArrowDown
-                    size={12}
+                    size={25}
                     className={
                       sortField === "updatedAt" && sortOrder === "desc"
                         ? "text-blue-600"
@@ -140,38 +140,62 @@ export default function ProductList() {
             </tr>
           </thead>
           <tbody>
-            {data?.list?.map((item: IProduct) => (
-              <tr
-                key={item.id}
-                className="bg-white hover:bg-gray-300 text-black"
-              >
-                <td className="px-6 py-4">{item.id}</td>
-                <td className="px-6 py-4">{item.name}</td>
-                <td className="px-6 py-4">{item.description || "----"}</td>
-                <td className="px-6 py-4">{item.price}</td>
-                <td className="px-6 py-4">{item.quantity_in_stock}</td>
-                <td className="px-6 py-4">
-                  {moment(item.created_at).format("DD MMM YY, hh:mm A")}
-                </td>
-                <td className="px-6 py-4">
-                  {moment(item.updated_at).format("DD MMM YY, hh:mm A")}
-                </td>
-                <td className="px-6 py-4 flex gap-3">
-                  <Link
-                    href={`/products/${item.id}`}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-md text-sm"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => deleteProduct(item.id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
-                  >
-                    Delete
-                  </button>
+            {/* Show a loader row when loading or refetching */}
+            {(isLoading || isRefetching) && (
+              <tr>
+                <td colSpan={7} className="px-6 py-4 text-center">
+                  <div className="w-8 h-8 border-4 border-t-4 border-gray-300 border-solid rounded-full animate-spin mx-auto"></div>
+                  <div>Loading...</div>
                 </td>
               </tr>
-            ))}
+            )}
+
+            {/* Show the actual data */}
+            {!isLoading &&
+              !isError &&
+              data?.list?.map((item: IProduct) => (
+                <tr
+                  key={item.id}
+                  className="bg-white hover:bg-gray-300 text-black"
+                >
+                  <td className="px-6 py-4 text-blue-700">
+                    <Link href={`/products/${item?.id}`}>{item?.id}</Link>
+                  </td>
+                  <td className="px-6 py-4">{item.name}</td>
+                  <td className="px-6 py-4">{item.description || "----"}</td>
+                  <td className="px-6 py-4">{item.price}</td>
+                  <td className="px-6 py-4">{item.quantity_in_stock}</td>
+                  <td className="px-6 py-4">
+                    {moment(item.created_at).format("DD MMM YY, hh:mm A")}
+                  </td>
+                  <td className="px-6 py-4">
+                    {moment(item.updated_at).format("DD MMM YY, hh:mm A")}
+                  </td>
+                  <td className="px-6 py-4 flex gap-3">
+                    <Link
+                      href={`/products/${item.id}`}
+                      className="bg-yellow-400 hover:bg-yellow-500 text-black px-4 py-2 rounded-md text-sm"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => deleteProduct(item.id)}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+
+            {/* Show error message if any */}
+            {isError && (
+              <tr>
+                <td colSpan={7} className="px-6 py-4 text-center text-red-600">
+                  Error: {error?.message || "Something went wrong!"}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

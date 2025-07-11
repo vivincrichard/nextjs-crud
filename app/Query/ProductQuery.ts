@@ -10,21 +10,21 @@ export const useAllProduct = (filters?: {
   sort?: string;
   seek?: number; 
 }) => {
-  const { data } = useQuery({
+  const { data,isLoading,isError,isRefetching,error } = useQuery({
     queryKey: [QueryKeys.LIST_PRODUCTS, filters],
     queryFn: () => ProductService.list(filters),
   });
 
-  return { data };
+  return { data, isLoading, isError, isRefetching, error };
 };
 
 
 export const useProductById = (id: number) => {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error,isRefetching } = useQuery({
     queryKey: [QueryKeys.GET_PRODUCT_ID],
     queryFn: () => ProductService.getById(id),
   });
-  return { data, isLoading, error };
+  return { data, isLoading, error,isRefetching };
 };
 
 export const useCreateProduct = () => {
